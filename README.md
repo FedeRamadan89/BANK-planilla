@@ -1,21 +1,21 @@
-# 🏦 CPD - Sistema Automatizado de Planillas (BCRA)
+# 🏦 NOC / CPD - Sistema Automatizado de Planillas (BCRA)
 
-Este proyecto es una solución web moderna diseñada para reemplazar el manejo manual de planillas de actividades diarias en el CPD. Automatiza la generación de reportes para los turnos de **Lunes a Viernes (V9.2)** y **Fin de Semana (SD&F)**, eliminando la redundancia de tareas repetitivas y estandarizando la salida en formato PDF.
+Este proyecto es una solución web moderna diseñada para reemplazar el manejo manual de planillas de actividades operativas. Automatiza el control de los turnos de **Lunes a Viernes (V9.2)** y **Fin de Semana (SD&F)**, evolucionando de un registro estático a un Dashboard dinámico integrado con herramientas de monitoreo.
 
 ## 🚀 Características Principales
 
-- **Consolidación de Tareas:** Agrupa tareas recurrentes (ej. Verificación Web cada 30 min) en bloques únicos para evitar scrolls infinitos.
-- **Dinamismo por Turno:** Selección inteligente de actividades según el día (Carga procesos específicos como Tuxedo o SEPAIMPO solo cuando corresponde).
-- **Generación de PDF:** Exportación profesional de reportes con un solo clic utilizando `html2pdf.js`.
-- **Historial Local:** Almacenamiento de reportes finalizados en el navegador para consultas rápidas por mes/fecha.
-- **Sección de Novedades:** Bloque dedicado para resumen de turno, tickets iTop e incidencias.
+- **Consolidación de Tareas:** Agrupa tareas recurrentes (ej. Verificación Web cada 30 min) en bloques lógicos para evitar scrolls infinitos y redundancia visual.
+- **Dinamismo por Turno:** Selección inteligente de actividades según el día y horario (carga procesos específicos como Tuxedo, SEPAIMPO o cierres de Sybase solo cuando corresponde).
+- **Integración con Checkmk (Check_MK):** Preparado para consumir la API de monitoreo. Los estados de los servidores y servicios se actualizan dinámicamente sin intervención manual.
+- **Generación de Reportes:** Exportación profesional a PDF utilizando `html2pdf.js` para auditorías.
+- **Trazabilidad de Novedades:** Bloque dedicado para el resumen del turno, registro de tickets iTop e incidencias.
 
 ## 🛠️ Tecnologías Utilizadas
 
-* **HTML5 / CSS3**
-* **Bootstrap 5** (Framework UI)
-* **JavaScript (Vanilla)** (Lógica de negocio y persistencia local)
-* **html2pdf.js** (Librería para exportación de documentos)
+* **Front-end:** HTML5, CSS3, Bootstrap 5 (Framework UI).
+* **Lógica y Persistencia:** JavaScript (Vanilla) y LocalStorage.
+* **Exportación:** `html2pdf.js`.
+* **Monitoreo / API:** Integración proyectada con API REST de Checkmk.
 
 ## 📋 Instrucciones de Uso
 
@@ -24,19 +24,20 @@ Este proyecto es una solución web moderna diseñada para reemplazar el manejo m
     git clone [https://github.com/FedeRamadan89/BANK-planilla.git](https://github.com/FedeRamadan89/BANK-planilla.git)
     ```
 2.  **Ejecutar:**
-    Simplemente abre el archivo `index.html` en cualquier navegador moderno (Chrome, Edge o Firefox). No requiere servidor web.
+    Abre el archivo `index.html` en Chrome, Edge o Firefox. (Para la fase de integración con Checkmk se requerirá levantar un servidor local o middleware para evitar errores de CORS).
 3.  **Operación:**
     - Selecciona el turno en la barra de navegación superior.
-    - Completa los estados y observaciones.
-    - Al finalizar el turno, completa el cuadro de "Novedades".
-    - Usa "Descargar PDF" para obtener el archivo físico y "Finalizar" para registrarlo en el historial.
+    - El sistema verificará automáticamente el estado de los servicios vinculados a Checkmk.
+    - Completa observaciones adicionales o estados de tareas 100% manuales.
+    - Registra los tickets de iTop en la sección "Novedades".
+    - Usa "Descargar PDF" para guardar el reporte formal del turno.
 
-## 📌 Estructura de Datos
-El sistema se basa en los manuales de procedimiento del CPD:
-- **Capítulo 15:** Verificación Web.
-- **Capítulo 3:** Reinicio de Servidores.
-- **Capítulo 32.8:** Gestión de Backups.
-- **Capítulo 2.2:** Control de Resguardos.
+## 📌 Estructura de Datos (Manuales de Procedimiento)
+La lógica de negocio mapea directamente la normativa vigente:
+- **Cap. 15:** Verificación Web.
+- **Cap. 2.2:** Control de Resguardos (Data Protector / Veeam / Teradata).
+- **Cap. 3:** Reinicio de Servidores.
+- **Cap. 32.8:** Herramienta Gestión BD / Backups.
 
 ## ✍️ Autor
-- **FedeRamadan89** - *Desarrollo Inicial* - [FedeRamadan89](https://github.com/FedeRamadan89)
+- **FedeRamadan89** - *Desarrollo Inicial y Arquitectura* - [Perfil de GitHub](https://github.com/FedeRamadan89)
