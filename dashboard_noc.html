@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Operaciones - Planilla Digital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .status-badge { width: 100px; }
+        .sticky-top-offset { top: 70px; z-index: 1000; }
+        .table-hover tbody tr:hover { background-color: #e9ecef; }
+        /* Simulación de estados de Checkmk */
+        .cmk-ok { background-color: #198754; color: white; }
+        .cmk-warn { background-color: #ffc107; color: black; }
+        .cmk-crit { background-color: #dc3545; color: white; }
+        .cmk-unknown { background-color: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-hdd-rack-fill"></i> NOC Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar-week"></i> Planilla LaV
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="loadSchedule('LaV')">Cargar Turno Actual</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Turno Mañana</a></li>
+                            <li><a class="dropdown-item" href="#">Turno Tarde</a></li>
+                            <li><a class="dropdown-item" href="#">Turno Noche</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar-check"></i> Planilla SD&F
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="loadSchedule('SDF')">Cargar Fin de Semana</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-5 pt-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h2 id="pageTitle" class="mt-3">Seleccione una Planilla</h2>
+                <p class="text-muted">Vista unificada de tareas y estado de servicios (Checkmk).</p>
+            </div>
+            <div class="col-md-6 text-end mt-4">
+                <button class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Actualizar Estados</button>
+                <button class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Exportar Reporte</button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0" id="tasksTable">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th style="width: 80px;">Hora</th>
+                                <th>Actividad / Proceso</th>
+                                <th>Objetivo / IP</th>
+                                <th style="width: 150px;">Estado Checkmk</th>
+                                <th>Observaciones (Cap.)</th>
+                                <th style="width: 100px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="6" class="text-center p-5">Seleccione un turno en el menú superior para comenzar.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Datos extraídos de tus documentos (Muestra representativa)
+        // La clave 'cmk_service' es la que usaremos para conectar con Checkmk en el futuro
+        const schedules = {
+            'LaV': [
+                { time: '00:00', task: 'Verificación WEB BCRA', target: 'ProdWeb1 (192.168.188.3)', cmk_host: 'prodweb1', cmk_service: 'HTTP', cap: 'Cap. 15' },
+                { time: '00:00', task: 'Verificación WEB BCRA', target: 'Web Pública (www.bcra.gob.ar)', cmk_host: 'www.bcra.gob.ar', cmk_service: 'HTTPS', cap: 'Cap. 15' },
+                { time: '00:00', task: 'Monitoreo Servidores', target: 'Nagios / Checkmk', cmk_host: 'nagios_srv', cmk_service: 'OMD Status', cap: 'Cap. 23' },
+                { time: '00:00', task: 'Control UPS', target: '10.2.0.242 / 243', cmk_host: 'ups_room1', cmk_service: 'Battery Status', cap: '-' },
+                { time: '00:00', task: 'Backups (Data Protector)', target: 'PRODEVO', cmk_host: 'backup_srv', cmk_service: 'DP_Status', cap: 'Cap. 2.2' },
+                
+                // Ejemplo de tarea específica de las 03:35 (Source 9)
+                { time: '03:35', task: 'TUXEDO - Detención Servicios', target: 'ProdTuxedoComm', cmk_host: 'tuxedo_srv', cmk_service: 'Proc_Tuxedo', cap: 'Cap. 16.3.2' },
+                
+                // Ejemplo de tarea de cierre (Source 59)
+                { time: '23:10', task: 'Backup BD Sybase', target: 'PRODBDSY1', cmk_host: 'prodbdsy1', cmk_service: 'Backup_Sybase', cap: 'Cap. 32.8' }
+            ],
+            'SDF': [
+                { time: '09:00', task: 'Verificación WEB BCRA', target: 'ProdWeb1 (192.168.188.3)', cmk_host: 'prodweb1', cmk_service: 'HTTP', cap: 'Cap. 15' },
+                { time: '09:00', task: 'Control Correo', target: 'Mail Sweeper', cmk_host: 'mail_gw', cmk_service: 'Queue_Size', cap: 'Cap. 20' },
+                { time: '10:15', task: 'Descarga Archivos AFIP', target: 'Tasa 0 Diferida', cmk_host: 'afip_gw', cmk_service: 'File_Check', cap: 'Cap. 1.5' }
+            ]
+        };
+
+        // Función para renderizar la tabla
+        function loadSchedule(type) {
+            const tbody = document.getElementById('tableBody');
+            const title = document.getElementById('pageTitle');
+            
+            // Limpiar tabla
+            tbody.innerHTML = '';
+            
+            // Setear título
+            title.innerText = type === 'LaV' ? 'Planilla Diaria: Lunes a Viernes' : 'Planilla: Sábados, Domingos y Feriados';
+
+            // Obtener datos (En un caso real, aquí expandiríamos las tareas repetitivas de cada 30 mins)
+            // Para la demo, usaremos la lista simplificada de arriba, pero simularemos el relleno de 30 mins
+            let data = schedules[type];
+
+            // Simulamos la generación de filas repetitivas (Web check cada 30 mins)
+            // NOTA: Esto automatiza lo que hacías manualmente copiando y pegando en Word.
+            if (type === 'LaV') {
+                // Aquí podrías inyectar lógica para rellenar los huecos de 30 minutos automáticamente
+            }
+
+            data.forEach((row, index) => {
+                let statusClass = 'cmk-ok'; 
+                let statusText = 'OK';
+                
+                // Simulación de un fallo aleatorio para demostración
+                if (Math.random() > 0.8) { statusClass = 'cmk-warn'; statusText = 'WARN'; }
+                if (Math.random() > 0.95) { statusClass = 'cmk-crit'; statusText = 'CRIT'; }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold">${row.time}</td>
+                    <td>${row.task}</td>
+                    <td class="text-monospace small">${row.target}</td>
+                    <td>
+                        <span class="badge ${statusClass} status-badge p-2 w-100">
+                            <i class="bi bi-activity"></i> ${statusText}
+                        </span>
+                        <input type="hidden" class="cmk-query" value="${row.cmk_host}/${row.cmk_service}">
+                    </td>
+                    <td><small class="text-muted">${row.cap}</small></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" title="Ver Detalles"><i class="bi bi-search"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
