@@ -5,23 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOC Dashboard - BCRA</title>
     
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Librería html2pdf (Para exportar la planilla) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         body { background-color: #f8f9fa; }
         .table-hover tbody tr:hover { background-color: #e9ecef; }
-        /* Oculta la caja de justificación por defecto */
         .reason-box { display: none; } 
     </style>
 </head>
 <body>
 
-    <!-- Barra de Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
@@ -32,7 +27,6 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <!-- Menú Lunes a Viernes -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-calendar-week"></i> Planilla LaV (V9.2)
@@ -41,7 +35,6 @@
                             <li><a class="dropdown-item" href="#" onclick="loadSchedule('LaV')">Cargar Turno Completo</a></li>
                         </ul>
                     </li>
-                    <!-- Menú Fines de Semana -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-calendar-check"></i> Planilla SD&F
@@ -55,25 +48,25 @@
         </div>
     </nav>
 
-    <!-- CONTENEDOR PRINCIPAL (Este div es el que se exporta a PDF) -->
     <div class="container-fluid px-4" id="reporteContenido">
         
-        <!-- Encabezado del Reporte -->
         <div class="row mb-3 align-items-center">
-            <div class="col-md-8">
+            <div class="col-md-7">
                 <h2 id="pageTitle" class="fw-bold text-secondary">Seleccione un Turno</h2>
                 <p class="text-muted mb-0"><i class="bi bi-calendar-event"></i> Fecha de Operación: <span id="fechaActual" class="fw-bold"></span></p>
             </div>
             
-            <!-- Botones de Acción (Ocultos al exportar a PDF) -->
-            <div class="col-md-4 text-end mt-3 mt-md-0" data-html2canvas-ignore="true">
+            <!-- Botones de Acción -->
+            <div class="col-md-5 text-end mt-3 mt-md-0" data-html2canvas-ignore="true">
+                <button class="btn btn-outline-secondary btn-sm shadow-sm me-2" onclick="limpiarPlanilla()">
+                    <i class="bi bi-eraser"></i> Limpiar Planilla
+                </button>
                 <button class="btn btn-danger btn-sm shadow-sm" onclick="exportarPDF()">
                     <i class="bi bi-file-pdf"></i> Descargar PDF
                 </button>
             </div>
         </div>
 
-        <!-- Tabla de Actividades -->
         <div class="card shadow-sm mb-4 border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -91,7 +84,7 @@
                             <tr>
                                 <td colspan="5" class="text-center p-5 text-muted">
                                     <i class="bi bi-arrow-up-circle fs-2 d-block mb-2"></i>
-                                    Seleccione un turno en el menú superior para cargar la grilla de operaciones.
+                                    Seleccione un turno en el menú superior para cargar la grilla.
                                 </td>
                             </tr>
                         </tbody>
@@ -100,7 +93,6 @@
             </div>
         </div>
 
-        <!-- Sección de Novedades e iTop -->
         <div class="card shadow-sm border-info mb-4">
             <div class="card-header bg-info text-white fw-bold">
                 <i class="bi bi-journal-text"></i> Novedades del Turno / Relevos
@@ -109,16 +101,15 @@
                 <div class="row">
                     <div class="col-md-8 mb-3 mb-md-0">
                         <label class="form-label fw-bold text-secondary">Detalle de Incidencias / Tareas Adicionales:</label>
-                        <textarea class="form-control border-info" rows="5" placeholder="Sin novedades..."></textarea>
+                        <textarea id="novedadesText" class="form-control border-info" rows="5" placeholder="Sin novedades..." oninput="guardarDatos()"></textarea>
                     </div>
                     <div class="col-md-4 border-start border-info">
                         <label class="form-label fw-bold text-secondary">Tickets iTop:</label>
                         
-                        <!-- Contenedor dinámico de Tickets -->
                         <div id="ticketsContainer">
+                            <!-- El primer ticket siempre tiene el botón de sumar (+) -->
                             <div class="input-group mb-2 ticket-row">
-                                <input type="text" class="form-control border-info" placeholder="Ej: INC-123456">
-                                <!-- Botón para agregar más tickets -->
+                                <input type="text" class="form-control border-info ticket-input" placeholder="Ej: INC-123456" oninput="guardarDatos()">
                                 <button class="btn btn-outline-info" type="button" onclick="addTicket()" data-html2canvas-ignore="true">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
@@ -127,25 +118,23 @@
 
                         <div class="mt-3">
                             <label class="form-label fw-bold text-secondary">Firma Operador:</label>
-                            <input type="text" class="form-control border-info" placeholder="Nombre / Legajo">
+                            <input id="firmaInput" type="text" class="form-control border-info" placeholder="Nombre / Legajo" oninput="guardarDatos()">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div> <!-- Fin Contenedor Principal -->
+    </div> 
 
-    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Lógica de la Aplicación -->
     <script>
-        // Setear la fecha actual en el encabezado
+        // Variables globales
+        let currentScheduleType = '';
         const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('fechaActual').innerText = new Date().toLocaleDateString('es-AR', opcionesFecha);
 
-        // Base de Datos: Extraída de los documentos del CPD
         const schedules = {
             'LaV': [
                 { time: '00:00', task: 'Verificación de la Página WEB del B.C.R.A.', target: 'ProdWeb1 (192.168.188.3)', cap: 'Cap. 15' },
@@ -169,18 +158,13 @@
             ]
         };
 
-        // Función principal para renderizar la tabla según el turno elegido
+        // Renderizar tabla
         function loadSchedule(type) {
+            currentScheduleType = type;
             const tbody = document.getElementById('tableBody');
-            const title = document.getElementById('pageTitle');
-            
-            // Actualizar el título
-            title.innerText = type === 'LaV' ? 'Planilla Operativa: Lunes a Viernes (V9.2)' : 'Planilla Operativa: Fin de Semana (SD&F)';
-            
-            // Limpiar la tabla
+            document.getElementById('pageTitle').innerText = type === 'LaV' ? 'Planilla Operativa: Lunes a Viernes (V9.2)' : 'Planilla Operativa: Fin de Semana (SD&F)';
             tbody.innerHTML = '';
             
-            // Renderizar las filas
             schedules[type].forEach(row => {
                 tbody.innerHTML += `
                     <tr>
@@ -188,76 +172,159 @@
                         <td class="fw-semibold">${row.task}</td>
                         <td class="small font-monospace text-secondary">${row.target}</td>
                         <td>
-                            <!-- Select Realizado / No Realizado -->
-                            <select class="form-select form-select-sm border-secondary shadow-sm" onchange="toggleReason(this)">
+                            <select class="form-select form-select-sm border-secondary shadow-sm status-select" onchange="toggleReason(this); guardarDatos();">
                                 <option value="Realizado" selected>Realizado</option>
                                 <option value="No realizado">No realizado</option>
                             </select>
-                            <!-- Textarea oculta para el motivo -->
-                            <textarea class="form-control form-control-sm mt-2 reason-box border-warning shadow-sm" rows="2" placeholder="Indique el motivo o Nro de ticket asociado..."></textarea>
+                            <textarea class="form-control form-control-sm mt-2 reason-box border-warning shadow-sm reason-text" rows="2" placeholder="Indique el motivo o Nro de ticket..." oninput="guardarDatos()"></textarea>
                         </td>
                         <td class="text-center"><span class="badge bg-secondary">${row.cap}</span></td>
                     </tr>
                 `;
             });
+            guardarDatos();
         }
 
-        // Función para mostrar/ocultar el cuadro de texto de justificación
+        // Lógica visual del desplegable
         function toggleReason(selectElement) {
             const reasonBox = selectElement.nextElementSibling;
             if (selectElement.value === 'No realizado') {
                 reasonBox.style.display = 'block';
-                // Cambia el color del select para dar alerta visual
                 selectElement.classList.replace('border-secondary', 'border-danger');
                 selectElement.classList.add('text-danger', 'fw-bold');
             } else {
                 reasonBox.style.display = 'none';
-                reasonBox.value = ''; // Limpia el texto si se arrepiente y vuelve a "Realizado"
+                reasonBox.value = ''; 
                 selectElement.classList.replace('border-danger', 'border-secondary');
                 selectElement.classList.remove('text-danger', 'fw-bold');
             }
         }
 
-        // Función para agregar múltiples inputs de iTop
+        // --- FUNCIONES DE AUTOGUARDADO ---
+
+        function guardarDatos() {
+            if (!currentScheduleType) return; // No guarda si no hay turno cargado
+
+            // Recopilar tabla
+            const tableData = [];
+            const selects = document.querySelectorAll('.status-select');
+            const textareas = document.querySelectorAll('.reason-text');
+            
+            for (let i = 0; i < selects.length; i++) {
+                tableData.push({ status: selects[i].value, reason: textareas[i].value });
+            }
+
+            // Recopilar tickets
+            const ticketInputs = document.querySelectorAll('.ticket-input');
+            const tickets = Array.from(ticketInputs).map(input => input.value);
+
+            // Armar objeto de guardado
+            const dataToSave = {
+                type: currentScheduleType,
+                table: tableData,
+                novedades: document.getElementById('novedadesText').value,
+                tickets: tickets,
+                firma: document.getElementById('firmaInput').value
+            };
+
+            localStorage.setItem('planilla_cpd_datos', JSON.stringify(dataToSave));
+        }
+
+        function cargarDatosGuardados() {
+            const saved = localStorage.getItem('planilla_cpd_datos');
+            if (saved) {
+                const data = JSON.parse(saved);
+
+                // Reconstruir estructura
+                loadSchedule(data.type);
+
+                // Volcar datos en tabla
+                const selects = document.querySelectorAll('.status-select');
+                const textareas = document.querySelectorAll('.reason-text');
+
+                data.table.forEach((row, i) => {
+                    if (selects[i]) {
+                        selects[i].value = row.status;
+                        toggleReason(selects[i]);
+                        textareas[i].value = row.reason;
+                    }
+                });
+
+                // Volcar Novedades y Firma
+                document.getElementById('novedadesText').value = data.novedades || '';
+                document.getElementById('firmaInput').value = data.firma || '';
+
+                // Reconstruir Tickets iTop
+                const container = document.getElementById('ticketsContainer');
+                container.innerHTML = ''; 
+                if (data.tickets && data.tickets.length > 0) {
+                    data.tickets.forEach((ticketVal, index) => {
+                        // El primero tiene botón "+", los demás botón de basura
+                        const btnHtml = index === 0 
+                            ? `<button class="btn btn-outline-info" type="button" onclick="addTicket()" data-html2canvas-ignore="true"><i class="bi bi-plus-lg"></i></button>`
+                            : `<button class="btn btn-outline-danger" type="button" onclick="removeTicket(this)" data-html2canvas-ignore="true"><i class="bi bi-trash"></i></button>`;
+                        
+                        container.innerHTML += `
+                            <div class="input-group mb-2 ticket-row">
+                                <input type="text" class="form-control border-info ticket-input" placeholder="Ej: INC-123456" value="${ticketVal}" oninput="guardarDatos()">
+                                ${btnHtml}
+                            </div>
+                        `;
+                    });
+                } else {
+                    // Si no hay guardados, arranca con 1 vacío
+                    container.innerHTML = `<div class="input-group mb-2 ticket-row"><input type="text" class="form-control border-info ticket-input" placeholder="Ej: INC-123456" oninput="guardarDatos()"><button class="btn btn-outline-info" type="button" onclick="addTicket()" data-html2canvas-ignore="true"><i class="bi bi-plus-lg"></i></button></div>`;
+                }
+            }
+        }
+
+        function limpiarPlanilla() {
+            if (confirm("¿Estás seguro de que deseas limpiar toda la planilla para iniciar un nuevo turno?")) {
+                localStorage.removeItem('planilla_cpd_datos');
+                location.reload(); // Recarga la página limpia
+            }
+        }
+
+        // --- FIN FUNCIONES DE AUTOGUARDADO ---
+
         function addTicket() {
             const container = document.getElementById('ticketsContainer');
             const newRow = document.createElement('div');
             newRow.className = 'input-group mb-2 ticket-row';
             newRow.innerHTML = `
-                <input type="text" class="form-control border-info" placeholder="Ej: INC-123456">
-                <!-- Botón para eliminar este ticket (data-html2canvas-ignore evita que salga en el PDF) -->
+                <input type="text" class="form-control border-info ticket-input" placeholder="Ej: INC-123456" oninput="guardarDatos()">
                 <button class="btn btn-outline-danger" type="button" onclick="removeTicket(this)" data-html2canvas-ignore="true">
                     <i class="bi bi-trash"></i>
                 </button>
             `;
             container.appendChild(newRow);
+            guardarDatos();
         }
 
-        // Función para remover un input de iTop
         function removeTicket(buttonElement) {
             buttonElement.parentElement.remove();
+            guardarDatos();
         }
 
-        // Función para exportar a PDF usando html2pdf.js
         function exportarPDF() {
             const element = document.getElementById('reporteContenido');
-            
-            // Nombre dinámico con fecha
             const dateStr = new Date().toISOString().slice(0,10);
             const turno = document.getElementById('pageTitle').innerText.includes('V9.2') ? 'LaV' : 'SDF';
-            const fileName = `Planilla_NOC_${turno}_${dateStr}.pdf`;
-
+            
             const opt = {
-                margin:       [10, 10, 10, 10], // top, left, bottom, right
-                filename:     fileName,
+                margin:       [10, 10, 10, 10],
+                filename:     `Planilla_${turno}_${dateStr}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            // Ejecutar la librería
             html2pdf().set(opt).from(element).save();
         }
+
+        // Al iniciar la página, revisar si hay algo guardado
+        document.addEventListener("DOMContentLoaded", cargarDatosGuardados);
+
     </script>
 </body>
 </html>
