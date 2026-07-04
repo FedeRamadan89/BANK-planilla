@@ -8,6 +8,7 @@ Este proyecto es una solución web moderna diseñada para reemplazar el manejo m
 - **Dinamismo por Turno:** Selección inteligente de actividades según el día y horario (carga procesos específicos como Tuxedo, SEPAIMPO o cierres de Sybase solo cuando corresponde).
 - **Control de Ejecución Interactivo:** Implementación de selectores de estado ("Realizado" / "No realizado"). Si una tarea no se completa, el sistema despliega automáticamente un campo obligatorio para registrar el motivo o Nro. de ticket.
 - **Gestión Dinámica de Tickets:** Sección de Novedades que permite agregar múltiples inputs de tickets iTop según la necesidad del turno.
+- **Autoguardado Local (Persistencia):** El sistema guarda automáticamente el progreso del turno en la memoria del navegador. Si la página se recarga o cierra por accidente, no se pierden los datos cargados.
 - **Generación de Reportes:** Exportación profesional a PDF utilizando `html2pdf.js` para firma y archivo.
 
 ## 🛠️ Tecnologías Utilizadas
@@ -15,7 +16,7 @@ Este proyecto es una solución web moderna diseñada para reemplazar el manejo m
 Al ser un MVP enfocado en la interfaz y la experiencia del operador, el proyecto es 100% Front-end y no requiere configuración de servidores.
 
 * **Estructura y Diseño:** HTML5, CSS3, Bootstrap 5 (Framework UI).
-* **Lógica Dinámica:** JavaScript (Vanilla).
+* **Lógica Dinámica y Persistencia:** JavaScript (Vanilla) y LocalStorage API.
 * **Exportación:** `html2pdf.js`.
 
 ## 📋 Instrucciones de Uso
