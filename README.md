@@ -11,9 +11,17 @@ Este proyecto es una solución web moderna diseñada para reemplazar el manejo m
 - **Autoguardado Local (Persistencia):** El sistema guarda automáticamente el progreso del turno en la memoria del navegador. Si la página se recarga o cierra por accidente, no se pierden los datos cargados.
 - **Generación de Reportes:** Exportación profesional a PDF utilizando `html2pdf.js` para firma y archivo.
 
+## 🏗️ Arquitectura del Proyecto
+
+El código está modularizado aplicando el principio de Separación de Responsabilidades (*Separation of Concerns*) para garantizar su escalabilidad y facilitar el mantenimiento en el Data Center:
+
+- **`index.html`**: Estructura principal y maquetado semántico (UI).
+- **`estilos.css`**: Hoja de estilos independiente.
+- **`app.js`**: Motor lógico del dashboard (eventos, persistencia en `localStorage`, carga de manuales y generación de PDF).
+
 ## 🛠️ Tecnologías Utilizadas
 
-Al ser un MVP enfocado en la interfaz y la experiencia del operador, el proyecto es 100% Front-end y no requiere configuración de servidores.
+Al ser un MVP enfocado en la interfaz y la experiencia del operador, el proyecto es 100% Front-end y no requiere configuración de servidores para su uso inmediato.
 
 * **Estructura y Diseño:** HTML5, CSS3, Bootstrap 5 (Framework UI).
 * **Lógica Dinámica y Persistencia:** JavaScript (Vanilla) y LocalStorage API.
