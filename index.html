@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Dashboard - BCRA</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Librería html2pdf (Para exportar la planilla) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .table-hover tbody tr:hover { background-color: #e9ecef; }
+        /* Oculta la caja de justificación por defecto */
+        .reason-box { display: none; } 
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-card-checklist text-info"></i> Planilla Operativa | CPD
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Menú Lunes a Viernes -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar-week"></i> Planilla LaV (V9.2)
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="loadSchedule('LaV')">Cargar Turno Completo</a></li>
+                        </ul>
+                    </li>
+                    <!-- Menú Fines de Semana -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar-check"></i> Planilla SD&F
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="loadSchedule('SDF')">Cargar Turno Fin de Semana</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL (Este div es el que se exporta a PDF) -->
+    <div class="container-fluid px-4" id="reporteContenido">
+        
+        <!-- Encabezado del Reporte -->
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-8">
+                <h2 id="pageTitle" class="fw-bold text-secondary">Seleccione un Turno</h2>
+                <p class="text-muted mb-0"><i class="bi bi-calendar-event"></i> Fecha de Operación: <span id="fechaActual" class="fw-bold"></span></p>
+            </div>
+            
+            <!-- Botones de Acción (Ocultos al exportar a PDF) -->
+            <div class="col-md-4 text-end mt-3 mt-md-0" data-html2canvas-ignore="true">
+                <button class="btn btn-danger btn-sm shadow-sm" onclick="exportarPDF()">
+                    <i class="bi bi-file-pdf"></i> Descargar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de Actividades -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 80px;" class="text-center">Hora</th>
+                                <th>Actividad / Proceso</th>
+                                <th>Objetivo / Servidor</th>
+                                <th style="width: 250px;" class="text-center">Estado de Ejecución</th>
+                                <th style="width: 120px;">Ref. Manual</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="5" class="text-center p-5 text-muted">
+                                    <i class="bi bi-arrow-up-circle fs-2 d-block mb-2"></i>
+                                    Seleccione un turno en el menú superior para cargar la grilla de operaciones.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Novedades e iTop -->
+        <div class="card shadow-sm border-info mb-4">
+            <div class="card-header bg-info text-white fw-bold">
+                <i class="bi bi-journal-text"></i> Novedades del Turno / Relevos
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-8 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">Detalle de Incidencias / Tareas Adicionales:</label>
+                        <textarea class="form-control border-info" rows="5" placeholder="Sin novedades..."></textarea>
+                    </div>
+                    <div class="col-md-4 border-start border-info">
+                        <label class="form-label fw-bold text-secondary">Tickets iTop:</label>
+                        
+                        <!-- Contenedor dinámico de Tickets -->
+                        <div id="ticketsContainer">
+                            <div class="input-group mb-2 ticket-row">
+                                <input type="text" class="form-control border-info" placeholder="Ej: INC-123456">
+                                <!-- Botón para agregar más tickets -->
+                                <button class="btn btn-outline-info" type="button" onclick="addTicket()" data-html2canvas-ignore="true">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label fw-bold text-secondary">Firma Operador:</label>
+                            <input type="text" class="form-control border-info" placeholder="Nombre / Legajo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- Fin Contenedor Principal -->
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        // Setear la fecha actual en el encabezado
+        const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('fechaActual').innerText = new Date().toLocaleDateString('es-AR', opcionesFecha);
+
+        // Base de Datos: Extraída de los documentos del CPD
+        const schedules = {
+            'LaV': [
+                { time: '00:00', task: 'Verificación de la Página WEB del B.C.R.A.', target: 'ProdWeb1 (192.168.188.3)', cap: 'Cap. 15' },
+                { time: '00:00', task: 'Monitoreo de Servidores y Control de Acceso', target: 'Nagios', cap: 'Cap. 23' },
+                { time: '02:00', task: 'Control UPS', target: '10.2.0.242 y 10.2.0.243', cap: '-' },
+                { time: '03:35', task: 'TUXEDO - Detención de los 69 servicios', target: 'ProdTuxedoComm', cap: 'Cap. 16.3.2' },
+                { time: '06:05', task: 'TUXEDO – Inicio de los 69 servicios', target: 'ProdTuxedoComm', cap: 'Cap. 16.3.1' },
+                { time: '08:00', task: 'SEPAIMPO (Proceso Diario)', target: 'SEPAIMPO 1 – Proceso Completo', cap: 'Cap. 24' },
+                { time: '10:00', task: 'Control PCs de Arsat', target: 'Acceso Remoto APC0790 y APC0588', cap: '-' },
+                { time: '17:15', task: 'Verificación inicio Proceso CHEQUES diario', target: 'Servidor PRODSQL1', cap: 'Cap. 27.2' },
+                { time: '23:10', task: 'Herramienta Gestión BD', target: 'Backup PRODBDSY1', cap: 'Cap. 32.8' }
+            ],
+            'SDF': [
+                { time: '00:00', task: 'Verificación de la Página WEB del B.C.R.A.', target: 'PRODWEB1 Dirección Privada', cap: 'Cap. 15' },
+                { time: '00:00', task: 'Control de Correo Entrante y Saliente', target: 'Mail Sweeper', cap: 'Cap. 20' },
+                { time: '00:00', task: 'Control de Resguardos (Cell Manager)', target: 'Resguardos en curso / Sesiones fallidas', cap: 'Cap. 2.2' },
+                { time: '08:00', task: 'Reinicio de Servidores Bases de Datos', target: '08:00 a 11:00 hs.', cap: 'Cap. 3' },
+                { time: '10:15', task: 'Descarga de Archivos A.F.I.P.', target: 'Tasa 0 Diferida (CTS)', cap: 'Cap. 1.5' },
+                { time: '18:00', task: 'Descarga de Archivos de A.F.I.P.', target: 'Facturas Apócrifas', cap: 'Cap. 38' },
+                { time: '22:00', task: 'Reinicio de Servidores de Producción', target: '22:00 a 01:00 hs.', cap: 'Cap. 3' }
+            ]
+        };
+
+        // Función principal para renderizar la tabla según el turno elegido
+        function loadSchedule(type) {
+            const tbody = document.getElementById('tableBody');
+            const title = document.getElementById('pageTitle');
+            
+            // Actualizar el título
+            title.innerText = type === 'LaV' ? 'Planilla Operativa: Lunes a Viernes (V9.2)' : 'Planilla Operativa: Fin de Semana (SD&F)';
+            
+            // Limpiar la tabla
+            tbody.innerHTML = '';
+            
+            // Renderizar las filas
+            schedules[type].forEach(row => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center fw-bold text-primary">${row.time}</td>
+                        <td class="fw-semibold">${row.task}</td>
+                        <td class="small font-monospace text-secondary">${row.target}</td>
+                        <td>
+                            <!-- Select Realizado / No Realizado -->
+                            <select class="form-select form-select-sm border-secondary shadow-sm" onchange="toggleReason(this)">
+                                <option value="Realizado" selected>Realizado</option>
+                                <option value="No realizado">No realizado</option>
+                            </select>
+                            <!-- Textarea oculta para el motivo -->
+                            <textarea class="form-control form-control-sm mt-2 reason-box border-warning shadow-sm" rows="2" placeholder="Indique el motivo o Nro de ticket asociado..."></textarea>
+                        </td>
+                        <td class="text-center"><span class="badge bg-secondary">${row.cap}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Función para mostrar/ocultar el cuadro de texto de justificación
+        function toggleReason(selectElement) {
+            const reasonBox = selectElement.nextElementSibling;
+            if (selectElement.value === 'No realizado') {
+                reasonBox.style.display = 'block';
+                // Cambia el color del select para dar alerta visual
+                selectElement.classList.replace('border-secondary', 'border-danger');
+                selectElement.classList.add('text-danger', 'fw-bold');
+            } else {
+                reasonBox.style.display = 'none';
+                reasonBox.value = ''; // Limpia el texto si se arrepiente y vuelve a "Realizado"
+                selectElement.classList.replace('border-danger', 'border-secondary');
+                selectElement.classList.remove('text-danger', 'fw-bold');
+            }
+        }
+
+        // Función para agregar múltiples inputs de iTop
+        function addTicket() {
+            const container = document.getElementById('ticketsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'input-group mb-2 ticket-row';
+            newRow.innerHTML = `
+                <input type="text" class="form-control border-info" placeholder="Ej: INC-123456">
+                <!-- Botón para eliminar este ticket (data-html2canvas-ignore evita que salga en el PDF) -->
+                <button class="btn btn-outline-danger" type="button" onclick="removeTicket(this)" data-html2canvas-ignore="true">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        // Función para remover un input de iTop
+        function removeTicket(buttonElement) {
+            buttonElement.parentElement.remove();
+        }
+
+        // Función para exportar a PDF usando html2pdf.js
+        function exportarPDF() {
+            const element = document.getElementById('reporteContenido');
+            
+            // Nombre dinámico con fecha
+            const dateStr = new Date().toISOString().slice(0,10);
+            const turno = document.getElementById('pageTitle').innerText.includes('V9.2') ? 'LaV' : 'SDF';
+            const fileName = `Planilla_NOC_${turno}_${dateStr}.pdf`;
+
+            const opt = {
+                margin:       [10, 10, 10, 10], // top, left, bottom, right
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Ejecutar la librería
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
