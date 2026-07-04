@@ -1,5 +1,15 @@
 # 🏦 NOC / CPD - Sistema Automatizado de Planillas (BCRA)
 
+> ⚠️ **RAMA EXPERIMENTAL: PRUEBA DE CONCEPTO (PoC) - INTEGRACIÓN API**
+> 
+> **Atención:** Estás en un entorno de desarrollo paralelo. Esta rama contiene el dashboard operativo, pero añade los scripts y prototipos necesarios para una futura fase de automatización y conexión con herramientas de monitoreo (Checkmk), los cuales **no** se encuentran en la rama de producción (`main`).
+> 
+> **Archivos exclusivos de este entorno:**
+> *   `Middleware_python.py`: Script de backend (Python) diseñado para la conexión y obtención de datos de los servidores.
+> *   `dashboard_checkmk_poc.html`: Prototipo de la interfaz con los *endpoints* preparados para la integración directa con Checkmk.
+
+---
+
 Este proyecto es una solución web moderna diseñada para reemplazar el manejo manual de planillas de actividades operativas. Automatiza el control de los turnos de **Lunes a Viernes (V9.2)** y **Fin de Semana (SD&F)**, evolucionando de un registro estático en Word a un Dashboard interactivo y auditable.
 
 ## 🚀 Características Principales
@@ -13,7 +23,7 @@ Este proyecto es una solución web moderna diseñada para reemplazar el manejo m
 
 ## 🏗️ Arquitectura del Proyecto
 
-El código está modularizado aplicando el principio de Separación de Responsabilidades (*Separation of Concerns*) para garantizar su escalabilidad y facilitar el mantenimiento en el Data Center:
+El código base está modularizado aplicando el principio de Separación de Responsabilidades (*Separation of Concerns*) para garantizar su escalabilidad y facilitar el mantenimiento en el Data Center:
 
 - **`index.html`**: Estructura principal y maquetado semántico (UI).
 - **`estilos.css`**: Hoja de estilos independiente.
@@ -21,7 +31,7 @@ El código está modularizado aplicando el principio de Separación de Responsab
 
 ## 🛠️ Tecnologías Utilizadas
 
-Al ser un MVP enfocado en la interfaz y la experiencia del operador, el proyecto es 100% Front-end y no requiere configuración de servidores para su uso inmediato.
+Al ser un MVP enfocado en la interfaz y la experiencia del operador, la base del proyecto es 100% Front-end y no requiere configuración de servidores para su uso inmediato.
 
 * **Estructura y Diseño:** HTML5, CSS3, Bootstrap 5 (Framework UI).
 * **Lógica Dinámica y Persistencia:** JavaScript (Vanilla) y LocalStorage API.
