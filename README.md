@@ -32,5 +32,5 @@ Al ser un MVP enfocado en la interfaz y la experiencia del operador, el proyecto
 ### 1. Clonar el repositorio
 Descargá el proyecto en tu equipo local:
 ```bash
-git clone [https://github.com/FedeRamadan89/BANK-planilla.git](https://github.com/FedeRamadan89/BANK-planilla.git)
+git clone https://github.com/FedeRamadan89/BANK-planilla.git
 cd BANK-planilla
