@@ -179,7 +179,16 @@ function limpiarPlanilla() {
 // 6. EXPORTACIÓN A PDF
 function exportarPDF() {
     const element = document.getElementById('reporteContenido');
-    const dateStr = new Date().toISOString().slice(0,10);
+    
+    // Captura la fecha congelada en pantalla (Ej: "lunes, 6 de julio de 2026")
+    const fechaPantalla = document.getElementById('fechaActual').innerText;
+    
+    // Extrae los números para armar un string limpio para el archivo (Ej: "6_de_julio_de_2026")
+    // Se agrega un control simple por si el formato de la fecha llegara a no tener la coma
+    const dateStr = fechaPantalla.includes(', ') 
+        ? fechaPantalla.split(', ')[1].replace(/ /g, '_')
+        : fechaPantalla.replace(/ /g, '_'); 
+    
     const turno = document.getElementById('pageTitle').innerText.includes('V9.2') ? 'LaV' : 'SDF';
     
     const opt = {
