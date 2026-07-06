@@ -7,7 +7,7 @@ const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'n
 // Carga la fecha al iniciar
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('fechaActual').innerText = new Date().toLocaleDateString('es-AR', opcionesFecha);
-    cargarDatosGuardados(); // Revisa si hay una sesión previa guardada
+    cargarDatosGuardados(); // Revisa si hay una sesión previa y, de haberla, sobreescribe la fecha
 });
 
 // 2. BASE DE DATOS LOCAL (Manuales y Tareas)
@@ -112,6 +112,7 @@ function guardarDatos() {
 
     const dataToSave = {
         type: currentScheduleType,
+        fecha: document.getElementById('fechaActual').innerText, // NUEVO: Guarda la fecha actual
         table: tableData,
         novedades: document.getElementById('novedadesText').value,
         tickets: tickets,
@@ -125,6 +126,11 @@ function cargarDatosGuardados() {
     const saved = localStorage.getItem('planilla_cpd_datos');
     if (saved) {
         const data = JSON.parse(saved);
+
+        // NUEVO: Si existe una fecha guardada, la restaura (útil para cambios de día en la madrugada)
+        if (data.fecha) {
+            document.getElementById('fechaActual').innerText = data.fecha;
+        }
 
         loadSchedule(data.type);
 
