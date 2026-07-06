@@ -1,5 +1,12 @@
 # 🏦 NOC / CPD - Sistema Automatizado de Planillas (BCRA)
 
+> ⚡ **RAMA DE MEJORA: MODO OFFLINE Y PERSISTENCIA (Pendiente de Aprobación)**
+> 
+> **Atención:** Esta rama es una versión "Candidata a Producción". Contiene el dashboard operativo base, pero incluye dos mejoras de infraestructura críticas para la resiliencia en el Data Center:
+> 
+> 1. **Modo 100% Offline:** Las dependencias visuales y de exportación (Bootstrap y html2pdf) fueron aisladas físicamente en la carpeta `Libs/`. El sistema ya no requiere salida a internet ni resolución DNS para funcionar o generar reportes.
+> 2. **Autoguardado de Madrugada:** Lógica de congelamiento de fecha en `app.js` para proteger el registro de los turnos nocturnos ante recargas del navegador posteriores a la medianoche.
+
 Este proyecto es una solución web moderna diseñada para reemplazar el manejo manual de planillas de actividades operativas. Automatiza el control de los turnos de **Lunes a Viernes (V9.2)** y **Fin de Semana (SD&F)**, evolucionando de un registro estático en Word a un Dashboard interactivo y auditable.
 
 ## 🚀 Características Principales
@@ -18,6 +25,7 @@ El código está modularizado aplicando el principio de Separación de Responsab
 - **`index.html`**: Estructura principal y maquetado semántico (UI).
 - **`estilos.css`**: Hoja de estilos independiente.
 - **`app.js`**: Motor lógico del dashboard (eventos, persistencia en `localStorage`, carga de manuales y generación de PDF).
+- **`Libs/`**: Carpeta de dependencias locales para garantizar el funcionamiento offline (Bootstrap y html2pdf).
 
 ## 🛠️ Tecnologías Utilizadas
 
